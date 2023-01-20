@@ -1,0 +1,9 @@
+# set ARD field with contents of current or last login
+
+export WHOAMI=$(who|grep console|awk '{ print $1 }')
+
+if [ $WHOAMI == "" ]; then
+ WHOAMI=$(last -1 | awk ' { print $1 } ')
+fi
+
+/System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -configure -computerinfo -set1 -1 "$WHOAMI"

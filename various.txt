@@ -1,0 +1,40 @@
+## 		USERLAND 		##
+
+currentUser=$(/usr/bin/stat -f%Su "/dev/console")
+
+lastUser=$( /usr/sbin/scutil <<< "show State:/Users/ConsoleUser" | /usr/bin/awk '/Name :/ && ! /loginwindow/ { print $3 }' )
+
+
+# zsh/bash currentUser=$( loggedInUser=$( scutil <<< "show State:/Users/ConsoleUser" | awk '/Name :/ && ! /loginwindow/ { print $3 }' )
+# sh currentUser=$( echo "show State:/Users/ConsoleUser" | scutil | awk '/Name :/ && ! /loginwindow/ { print $3 }' )
+
+currentUserHome=$(/usr/bin/dscl . -read "/Users/$currentUser" NFSHomeDirectory | /usr/bin/awk ' { print $NF } ')
+
+sudo -u "$currentUser" /do/stuff/here
+
+uid=$(/usr/bin/id -u "$currentUser")
+
+launchctl asuser $uid launchctl load com.example.agent #LaunchAgents
+
+
+# 		last logged in user #
+lastUser=$(defaults read /Library/Preferences/com.apple.loginwindow lastUserName)
+
+# 		last time we opened something
+mdls  -name kMDItemLastUsedDate "$Application""" | awk ' { print $3, $4} ' # case-sensitive, incl path
+
+# 		are we sudo'd?
+if [ $EUID -ne 0 ]; then
+	echo
+	echo "This script requires elevated privileges. Run it again with \"sudo\"."
+	echo
+	exit 0
+fi
+
+
+# 		do we need to get the installer?
+installer_pid=$(/bin/ps -o pid,command -ax | /usr/bin/grep "Installer\.app/Contents/MacOS/Installer" | /usr/bin/awk '{print $1}')
+
+
+# 		quicklook cache
+/usr/bin/qlmanage -r cache

@@ -1,3 +1,5 @@
+# to-do: check for jamf, call policy; install pkg otherwise
+
 if [ -e /usr/local/bin/dockutil ] ; then
 	curl -O https://github.com/kcrawford/dockutil/releases/download/3.0.2/dockutil-3.0.2.pkg ;
 	installer -pkg dockutil-3.0.2.pkg -target / ;
@@ -7,6 +9,11 @@ fi
 
 /usr/local/bin/dockutil --remove all --no-restart ~ ;
 sleep 5 ;
+
+# to-do: check for AD binding, add Directory Utility if bound
+#	 add Directory Utility based on which location
+#	 add new cryptex location for Safari etc if Ventura device
+#	 add System Settings if Ventura device
 
 /usr/local/bin/dockutil --add /Applications/Safari.app --position 1 --no-restart ~ ;
 /usr/local/bin/dockutil --add /Applications/Google\ Chrome.app --position 2 --no-restart ~ ;

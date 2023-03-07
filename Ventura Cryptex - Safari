@@ -1,0 +1,8 @@
+# Safari’s location changed in macOS 13 Ventura. If statement to supply the correct location based on OS version.
+
+version=$(sw_vers -productVersion | awk -F '.' '{print $1}')
+if [ $version -lt 13 ]; then
+	safari=/Applications/Safari.app
+	else
+	safari=/System/Volumes/Preboot/Cryptexes/App/System/Applications/Safari.app
+fi

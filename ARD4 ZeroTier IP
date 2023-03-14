@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# must be run as root when sent from ARD / Send UNIX Command
+
+if [[ -e /usr/local/bin/zerotier-cli ]]; then
+
+	ip=$(/usr/local/bin/zerotier-cli listnetworks | awk '{if (NR!=1) {print substr($NF, 1, length($NF)-3)}} ')
+
+fi
+
+/System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart -configure -computerinfo -set2 -2 "$ip"

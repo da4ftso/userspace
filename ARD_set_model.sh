@@ -2,7 +2,7 @@
 
 # if arch = arm
 
-arch=$(/usr/bin/arch)
+arch=$(/usr/bin/arch) # or use /usr/bin/machine but when was that added to Macs
 
 if [ "$arch" == "arm64" ]; then
         model=$(/usr/libexec/PlistBuddy -c 'Print :0:product-name' /dev/stdin <<< "$(ioreg -arc IOPlatformDevice -k product-name)" 2> /dev/null | tr -cd '[:print:]')

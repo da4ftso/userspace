@@ -38,3 +38,7 @@ installer_pid=$(/bin/ps -o pid,command -ax | /usr/bin/grep "Installer\.app/Conte
 
 # 		quicklook cache
 /usr/bin/qlmanage -r cache
+
+
+#		set BBEdit to open in iTerm2
+defaults write com.barebones.bbedit TerminalBundleID -string "com.googlecode.iterm2"

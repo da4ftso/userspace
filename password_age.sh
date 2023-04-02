@@ -6,7 +6,7 @@ USER=$(stat -f%Su /dev/console)
 # return epoch time
 passwordSet=$(/usr/bin/dscl . read /Users/$USER/ accountPolicyData | sed -n '/passwordLastSetTime/{n;s@.*<real>\(.*\)</real>@\1@p;}' | sed s/\.[0-9,]*$//g)
 
-#current date in epoch
+# current date in epoch
 currentDate=$(date +%s)
 
 # current date in epoch - password last changed in epoch

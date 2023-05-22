@@ -1,0 +1,5 @@
+loggedInUser=$( echo "show State:/Users/ConsoleUser" | scutil | awk '/Name :/ && ! /loginwindow/ { print $3 }' )
+# If no user is logged-in; fail back to last logged-in user
+if [[ -z "${loggedInUser}" || "${loggedInUser}" == "loginwindow" ]]; then
+    loggedInUser=$( last -1 -t ttys000 | awk '{print $1}' )
+fi

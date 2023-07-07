@@ -1,6 +1,6 @@
 ## 		USERLAND 		##
 
-currentUser=$(/usr/bin/stat -f%Su "/dev/console")
+currentUser=$( /usr/bin/stat -f%Su "/dev/console" )
 
 lastUser=$( /usr/sbin/scutil <<< "show State:/Users/ConsoleUser" | /usr/bin/awk '/Name :/ && ! /loginwindow/ { print $3 }' )
 
@@ -10,7 +10,15 @@ lastUser=$( /usr/sbin/scutil <<< "show State:/Users/ConsoleUser" | /usr/bin/awk 
 
 currentUserHome=$(/usr/bin/dscl . -read "/Users/$currentUser" NFSHomeDirectory | /usr/bin/awk ' { print $NF } ')
 
-sudo -u "$currentUser" /do/stuff/here
+# (C) Andrew Worth Carson
+# MIT License: https://andrewworthcarson.com/mit_license.html
+
+for user in $(dscl . list /Users UniqueID | awk '$2 >= 500 {print $1}'); do
+    userHome=$(dscl . read /Users/"$user" NFSHomeDirectory | sed 's/NFSHomeDirectory://' | grep "/" | sed 's/^[ \t]*//')
+    echo "$user:$userHome"
+done
+
+sudo -u "$currentUser" /do/stuff/here # replace with runAsUser()
 
 uid=$(/usr/bin/id -u "$currentUser")
 
@@ -20,8 +28,10 @@ launchctl asuser $uid launchctl load com.example.agent #LaunchAgents
 # 		last logged in user #
 lastUser=$(defaults read /Library/Preferences/com.apple.loginwindow lastUserName)
 
+
 # 		last time we opened something
 mdls  -name kMDItemLastUsedDate "$Application""" | awk ' { print $3, $4} ' # case-sensitive, incl path
+
 
 # 		are we sudo'd?
 if [ $EUID -ne 0 ]; then
@@ -39,6 +49,8 @@ installer_pid=$(/bin/ps -o pid,command -ax | /usr/bin/grep "Installer\.app/Conte
 # 		quicklook cache
 /usr/bin/qlmanage -r cache
 
+#		get bundle id
+osascript -e 'get id of app "AppName"'
 
 #		set BBEdit to open in iTerm2
 defaults write com.barebones.bbedit TerminalBundleID -string "com.googlecode.iterm2"

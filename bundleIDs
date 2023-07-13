@@ -1,0 +1,9 @@
+#    bundle IDs, authorities, etc
+
+# Developer ID authority
+/usr/bin/codesign -dvv "/Applications/EXAMPLE.app" 2>&1 | /usr/bin/grep "Developer ID Application" | /usr/bin/cut -d ':' -f2 | /usr/bin/xargs
+
+# Team ID
+/usr/bin/codesign -dvv "/Applications/EXAMPLE.app" 2>&1 | /usr/bin/grep "TeamIdentifier" | /usr/bin/cut -d '=' -f2
+
+/usr/bin/osascript -e 'get id of app "AppName"'

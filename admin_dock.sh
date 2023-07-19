@@ -16,9 +16,20 @@
 # ? check OS version, add System Prefs vs System Settings
 # ? check OS version, add Safari from proper location
 
-# check for dockutil, call policy if not present
+# check for dockutil, call policy or try direct install if not present - INCOMPLETE
 
-# read jss_url first - INCOMPLETE
+# if dockutil is present, bail out
+# if dockutil is not present, read jss and try jamf policy first
+# if jss is empty OR if jss not empty BUT dockutil still not present, try direct download
+# if dockutil still not present, bail out
+
+jss_url=$(defaults read /Library/Preferences/com.jamfsoftware.jamf.plist jss_url)
+
+if [[ -n $jss_url ]]; then
+	curl --output-dir /private/tmp -O https://github.com/kcrawford/dockutil/releases/download/3.0.2/dockutil-3.0.2.pkg ;
+	installer -pkg /private/tmp/dockutil-3.0.2.pkg -target / ;
+	sleep 1 ;
+fi
 
 if [[ ! -e "/usr/local/bin/dockutil" ]]; then
    /usr/local/bin/jamf policy -event install-dockutil
@@ -27,11 +38,9 @@ fi
 # direct DL if no jamf
 
 if [ -e /usr/local/bin/dockutil ] ; then
-	curl --output-dir /private/tmp -O https://github.com/kcrawford/dockutil/releases/download/3.0.2/dockutil-3.0.2.pkg ;
-	installer -pkg /private/tmp/dockutil-3.0.2.pkg -target / ;
-	sleep 1 ;
 	echo "dockutil installed.."
 fi
+
 
 itemsToRemove=(
    "Address Book"

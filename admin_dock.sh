@@ -9,11 +9,12 @@
 # bash string manipulations here https://www.tldp.org/LDP/LG/issue18/bash.html
 
 # TO-DO: 
-# - check for jamf
-# - check for dockutil; install from jamf (or download from site)
-# - check for AD binding, add Directory Utility if bound
-# - check OS version, add System Prefs vs System Settings
-# - check OS version, add Safari from proper location
+# ✅ check for jamf
+# ✅ check for dockutil; install from jamf (or download from site)
+# ✅ check for AD binding, add Directory Utility if bound
+# validate new AD, ARD vs SS checks, & that add to array works as intended
+# ? check OS version, add System Prefs vs System Settings
+# ? check OS version, add Safari from proper location
 
 # check for dockutil, call policy if not present
 
@@ -61,6 +62,24 @@ itemsToAdd=(
    "/Applications/Utilities/Terminal.app"
    "/Applications/System Preferences.app"
 )
+
+# check for AD binding
+
+ADCompName=$(dsconfigad -show | awk -F'= ' '/Computer Account/{print $NF}')
+
+if [[ -n "$ADCompName" ]]; then
+    itemsToAdd+=("/System/Library/CoreServices/Applications/Directory Utility.app") # add to itemsToAdd array
+fi
+
+
+# check for ARD, add Screen Sharing otherwise
+
+if [[ ! -e "/Applications/Remote Desktop.app" ]]; then
+    itemsToAdd+=("/System/Library/CoreServices/Applications/Screen Sharing.app")
+else
+    itemsToAdd+=("/Applications/Remote Desktop.app")
+fi    
+
 
 for removalItem in "${itemsToRemove[@]}"
    do

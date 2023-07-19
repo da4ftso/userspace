@@ -10,10 +10,16 @@
 
 # TO-DO: 
 # - check for jamf
-# - check for dockutil; install from jamf or site
+# - check for dockutil; install from jamf (or download from site)
 # - check for AD binding, add Directory Utility if bound
 # - check OS version, add System Prefs vs System Settings
 # - check OS version, add Safari from proper location
+
+# check for dockutil, call policy if not present
+
+if [[ ! -e "/usr/local/bin/dockutil" ]]; then
+   /usr/local/bin/jamf policy -event install-dockutil
+fi   
 
 itemsToRemove=(
    "Address Book"
@@ -72,7 +78,7 @@ for additionItem in "${itemsToAdd[@]}"
       # Stripping path and extension code based on code from http://stackoverflow.com/a/2664746
       additionItemString=${additionItem##*/}
       additionItemBasename=${additionItemString%.*}
-      inDock=$(/usr/local/bin/dockutil --list | /usr/bin/grep "additionItemBasename")
+      inDock=$(/usr/local/bin/dockutil --list | /usr/bin/grep "$additionItemBasename")
       if [ -e "$additionItem" ] && [ -z "$inDock" ]; then
             /usr/local/bin/dockutil --add "$additionItem" --no-restart
       fi

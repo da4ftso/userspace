@@ -18,9 +18,20 @@
 
 # check for dockutil, call policy if not present
 
+# read jss_url first - INCOMPLETE
+
 if [[ ! -e "/usr/local/bin/dockutil" ]]; then
    /usr/local/bin/jamf policy -event install-dockutil
-fi   
+fi
+
+# direct DL if no jamf
+
+if [ -e /usr/local/bin/dockutil ] ; then
+	curl --output-dir /private/tmp -O https://github.com/kcrawford/dockutil/releases/download/3.0.2/dockutil-3.0.2.pkg ;
+	installer -pkg /private/tmp/dockutil-3.0.2.pkg -target / ;
+	sleep 1 ;
+	echo "dockutil installed.."
+fi
 
 itemsToRemove=(
    "Address Book"

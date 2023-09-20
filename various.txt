@@ -2,6 +2,8 @@
 
 currentUser=$( /usr/bin/stat -f%Su "/dev/console" )
 
+loggedInUID=$(scutil <<< "show State:/Users/ConsoleUser" | awk '/UID : / { print $NF }')
+
 lastUser=$( /usr/sbin/scutil <<< "show State:/Users/ConsoleUser" | /usr/bin/awk '/Name :/ && ! /loginwindow/ { print $3 }' )
 
 

@@ -1,8 +1,11 @@
+#!/bin/bash
+
 # set ARD field with contents of current or last login
+# run via ARD 'Send UNIX Command' as 'root' or local admin user
 
-export WHOAMI=$(who|grep console|awk '{ print $1 }')
+WHOAMI="$(who|awk '/console/ { print $1 }')"
 
-if [ $WHOAMI == "" ]; then
+if [ "$WHOAMI" == "" ]; then
  WHOAMI=$(last -1 | awk ' { print $1 } ')
 fi
 

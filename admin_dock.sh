@@ -13,10 +13,7 @@
 # ✅ check for dockutil; install from jamf (or download from site)
 # ✅ check for AD binding, add Directory Utility if bound
 # ✅ validate new AD, ARD vs SS checks, & that add to array works as intended
-# ? check OS version, add System Prefs vs System Settings
-# ? check OS version, add Safari from proper location
-
-# check for dockutil, call policy or try direct install if not present - INCOMPLETE
+# ✅ check OS version, add System Prefs vs System Settings
 
 # if dockutil is present, bail out
 # if dockutil is not present, read jss and try jamf policy first

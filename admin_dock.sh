@@ -25,22 +25,14 @@
 
 jss_url=$(defaults read /Library/Preferences/com.jamfsoftware.jamf.plist jss_url)
 
-if [[ -n $jss_url ]]; then
+if [[ ! -e "/usr/local/bin/dockutil" ]]; then
+        if [[ -z $jss_url ]]; then
 	curl --output-dir /private/tmp -O https://github.com/kcrawford/dockutil/releases/download/3.0.2/dockutil-3.0.2.pkg ;
 	installer -pkg /private/tmp/dockutil-3.0.2.pkg -target / ;
 	sleep 1 ;
 fi
-
-if [[ ! -e "/usr/local/bin/dockutil" ]]; then
    /usr/local/bin/jamf policy -event install-dockutil
 fi
-
-# direct DL if no jamf
-
-if [ -e /usr/local/bin/dockutil ] ; then
-	echo "dockutil installed.."
-fi
-
 
 itemsToRemove=(
    "Address Book"

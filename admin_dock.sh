@@ -12,7 +12,7 @@
 # ✅ check for jamf
 # ✅ check for dockutil; install from jamf (or download from site)
 # ✅ check for AD binding, add Directory Utility if bound
-# validate new AD, ARD vs SS checks, & that add to array works as intended
+# ✅ validate new AD, ARD vs SS checks, & that add to array works as intended
 # ? check OS version, add System Prefs vs System Settings
 # ? check OS version, add Safari from proper location
 

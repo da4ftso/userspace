@@ -51,7 +51,7 @@ itemsToRemove=(
    "Dictionary"
    "Downloads"
    "FaceTime"
-   "Freehand"
+   "Freeform"
    "iBooks"
    "iPhoto"
    "iTunes"

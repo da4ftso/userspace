@@ -38,13 +38,19 @@ itemsToRemove=(
    "Address Book"
    "App Store"
    "Books"
+   "Calculator"
    "Calendar"
+   "Clock"
    "Contacts"
    "Dictionary"
    "Downloads"
    "FaceTime"
+   "Find My"
+   "Font Book"
    "Freeform"
    "iBooks"
+   "Image Capture"
+   "iMovie"
    "iPhoto"
    "iTunes"
    "Keynote"
@@ -60,11 +66,18 @@ itemsToRemove=(
    "Pages"
    "Photos"
    "Podcasts"
+   "QuickTime"
+   "QuickTime Player"
    "Reminders"
    "Siri"
+   "Shortcuts"
+   "Stickies"
    "Stocks"
    "TextEdit"
+   "Time Machine"
    "TV"
+   "Voice Memos"
+   "Weather"
 )
 
 itemsToAdd=(
@@ -72,7 +85,6 @@ itemsToAdd=(
    "/Applications/Safari.app"
    "/Applications/Preview.app"
    "/Applications/Utilities/Terminal.app"
-   "/Applications/System Preferences.app"
 )
 
 # check for AD binding
@@ -90,6 +102,17 @@ if [[ ! -e "/Applications/Remote Desktop.app" ]]; then
     itemsToAdd+=("/System/Library/CoreServices/Applications/Screen Sharing.app")
 else
     itemsToAdd+=("/Applications/Remote Desktop.app")
+fi    
+
+
+# check OS version, add correct System Settings vs Preferences
+
+macOSversionMAJOR=$(/usr/bin/sw_vers -productVersion | /usr/bin/awk -F. '{ print $1}')
+
+if [[ $macOSversionMAJOR == "13" || $macOSversionMAJOR == "14" ]]; then
+    itemsToAdd+=("/Applications/System Settings.app")
+else
+    itemsToAdd+=("/Applications/System Preferences.app")
 fi    
 
 

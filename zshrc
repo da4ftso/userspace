@@ -8,6 +8,14 @@ export PATH="/opt/homebrew/sbin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/
 
 # functions
 
+function vers () {
+defaults read $1/Contents/Info.plist CFBundleShortVersionString
+}
+
+function lvers () {
+defaults read $1/Contents/Info.plist CFBundleVersion
+}
+
 function pwr () {
 echo $(pmset -g batt | awk ' NR==2 { print $3 " " $4 " " $5 } ')
 }
@@ -32,9 +40,12 @@ alias lt="ls -lt | more"
 
 alias history="history -f"
 
+alias muc="~/.cargo/bin/muc -f ~/.zsh_history | head -n 10"
+
 alias greedy="autopkg repo-update all ; autopkg run --recipe-list ~/Library/Application\ Support/AutoPkgr/recipe_list.txt --report-plist /private/tmp/autopkg-report.xml ; /opt/homebrew/bin/brew update ; /opt/homebrew/bin/brew upgrade --cask --greedy ; /opt/homebrew/bin/brew upgrade $(/opt/homebrew/bin/brew outdated | awk '{ print $1 }') ; /opt/homebrew/bin/brew cleanup ; sudo jamf recon ; date"
 
 alias caf="caffeinate -di &"
+alias halfcaf="caffeinate -i &"
 alias decaf="pkill caffeinate"
 
 alias source=". ~/.zshrc && echo 'zsh config reloaded from ~/.zshrc'"

@@ -17,7 +17,7 @@ defaults read $1/Contents/Info.plist CFBundleVersion
 }
 
 function pwr () {
-echo $(pmset -g batt | awk 'NR==2 { print $3 " " $4 }' | sed 's/;//g')
+pmset -g batt | awk 'NR==2 { print $3 " " $4 }' | sed 's/;//g'
 }
 
 function jtail () {

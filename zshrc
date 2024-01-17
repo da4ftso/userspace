@@ -40,6 +40,8 @@ alias lt="ls -lt | more"
 
 alias history="history -f"
 
+alias pip-upgrade="python3 -m pip install --upgrade pip"
+
 alias muc="~/.cargo/bin/muc -f ~/.zsh_history | head -n 10"
 
 alias greedy="autopkg repo-update all ; autopkg run --recipe-list ~/Library/Application\ Support/AutoPkgr/recipe_list.txt --report-plist /private/tmp/autopkg-report.xml ; /opt/homebrew/bin/brew update ; /opt/homebrew/bin/brew upgrade --cask --greedy ; /opt/homebrew/bin/brew upgrade $(/opt/homebrew/bin/brew outdated | awk '{ print $1 }') ; /opt/homebrew/bin/brew cleanup ; sudo jamf recon ; date"

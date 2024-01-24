@@ -25,7 +25,7 @@ if [[ "${state}" = "Connected" || "${wireless_ip}" =~ /^[1][0][.][7]/gm || -n "$
 		state=$(/opt/cisco/anyconnect/bin/vpn state | /usr/bin/awk '/state: / { print $NF ; exit } ')
 		display=$(/usr/sbin/ioreg -p IOUSB -w0 | grep "Studio Display")
 
-		if [[ "${state}" = "Disconnected" || ! -n "${display}" ]; then
+		if [[ "${state}" = "Disconnected" || ! -n "${display}" ]]; then
 
 			/usr/bin/shortcuts run "Off Network"
 

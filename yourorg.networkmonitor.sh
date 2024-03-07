@@ -15,13 +15,15 @@ sc=/opt/cisco/secureclient/bin/vpn
 
 if [ -e $ac ]; then
 
-	state=$($ac state | /usr/bin/awk '/state: / { print $NF ; exit } ')
+	vpn=$ac
 	
 elif [ -e $sc ]; then
 
-	state=$($sc state | /usr/bin/awk '/state: / { print $NF ; exit } ')
+	vpn=$sc
 	
-fi
+fi	
+
+state=$($vpn state | /usr/bin/awk '/state: / { print $NF ; exit } ')
 
 display=$(/usr/sbin/ioreg -p IOUSB -w0 | grep "Studio Display")
 
@@ -37,11 +39,11 @@ if [[ "${state}" = "Connected" || -n "${display}" ]]; then
 
 		sleep 30
 
-		state=$(/opt/cisco/anyconnect/bin/vpn state | /usr/bin/awk '/state: / { print $NF ; exit } ')
+		state=$($vpn state | /usr/bin/awk '/state: / { print $NF ; exit } ')
 		display=$(/usr/sbin/ioreg -p IOUSB -w0 | grep "Studio Display")
 
-		if [[ "${state}" = "Disconnected" || ! -n "${display}" ]]; then
-
+		if [[ "${state}" = "Disconnected" || -z "${display}" ]]; then
+  
 			/usr/bin/shortcuts run "Off Network"
 
 			sleep="n"

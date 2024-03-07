@@ -8,11 +8,26 @@
 # for the fleet, jamf log?
 # for me, run a shortcut
 
-state=$(/opt/cisco/anyconnect/bin/vpn state | /usr/bin/awk '/state: / { print $NF ; exit } ')
-wireless_ip=$(/usr/sbin/ipconfig getifaddr en0)
+# wireless_ip=$(/usr/sbin/ipconfig getifaddr en0)
+
+ac=/opt/cisco/anyconnect/bin/vpn
+sc=/opt/cisco/secureclient/bin/vpn
+
+if [ -e $ac ]; then
+
+	state=$($ac state | /usr/bin/awk '/state: / { print $NF ; exit } ')
+	
+elif [ -e $sc ]; then
+
+	state=$($sc state | /usr/bin/awk '/state: / { print $NF ; exit } ')
+	
+fi
+
 display=$(/usr/sbin/ioreg -p IOUSB -w0 | grep "Studio Display")
 
-if [[ "${state}" = "Connected" || "${wireless_ip}" =~ /^[1][0][.][7]/gm || -n "${display}" ]]; then
+# if [[ "${state}" = "Connected" || "${wireless_ip}" =~ /^[1][0][.][7]/gm || -n "${display}" ]]; then
+
+if [[ "${state}" = "Connected" || -n "${display}" ]]; then
 
 	/usr/bin/shortcuts run "At Work"
 
@@ -20,7 +35,7 @@ if [[ "${state}" = "Connected" || "${wireless_ip}" =~ /^[1][0][.][7]/gm || -n "$
 
 	while [ "$sleep" = "y" ]; do
 
-		sleep 45
+		sleep 30
 
 		state=$(/opt/cisco/anyconnect/bin/vpn state | /usr/bin/awk '/state: / { print $NF ; exit } ')
 		display=$(/usr/sbin/ioreg -p IOUSB -w0 | grep "Studio Display")

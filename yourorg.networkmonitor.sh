@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# query the anyconnect binary, check for work LAN IP, check for work monitor
+# query the cisco vpn binary, check for work LAN IP, check for work monitor
 # Do Things if it returns Connected
 # bail out if Disconnected
 

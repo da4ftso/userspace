@@ -1,14 +1,14 @@
 #!/bin/bash
 
-# query the cisco vpn binary, check for work LAN IP, check for work monitor
-# Do Things if it returns Connected
-# bail out if Disconnected
+# query the cisco vpn binary (anyconnect 4, secureclient 5)
+# Do Things if it returns 'Connected'
+# do Other Things out if 'Disconnected'
 
 # call this from a LA since only running when logged in & user initiates VPN
 # for the fleet, jamf log?
 # for me, run a shortcut
 
-# wireless_ip=$(/usr/sbin/ipconfig getifaddr en0)
+# also let's change state to a function
 
 ac=/opt/cisco/anyconnect/bin/vpn
 sc=/opt/cisco/secureclient/bin/vpn
@@ -23,13 +23,9 @@ elif [ -e $sc ]; then
 	
 fi	
 
-state=$($vpn state | /usr/bin/awk '/state: / { print $NF ; exit } ')
+state=$($vpn status | grep -v 'Unknown' | /usr/bin/awk '/state: / { print $NF ; exit } ')
 
-display=$(/usr/sbin/ioreg -p IOUSB -w0 | grep "Studio Display")
-
-# if [[ "${state}" = "Connected" || "${wireless_ip}" =~ /^[1][0][.][7]/gm || -n "${display}" ]]; then
-
-if [[ "${state}" = "Connected" || -n "${display}" ]]; then
+if [ "${state}" = "Connected" ]; then
 
 	/usr/bin/shortcuts run "At Work"
 
@@ -39,11 +35,10 @@ if [[ "${state}" = "Connected" || -n "${display}" ]]; then
 
 		sleep 30
 
-		state=$($vpn state | /usr/bin/awk '/state: / { print $NF ; exit } ')
-		display=$(/usr/sbin/ioreg -p IOUSB -w0 | grep "Studio Display")
+		state=$($vpn status | grep -v 'Unknown' | /usr/bin/awk '/state: / { print $NF ; exit } ')
+		
+		if [ "${state}" = "Disconnected" ]; then
 
-		if [[ "${state}" = "Disconnected" || -z "${display}" ]]; then
-  
 			/usr/bin/shortcuts run "Off Network"
 
 			sleep="n"

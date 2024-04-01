@@ -8,6 +8,14 @@ export PATH="/opt/homebrew/sbin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/
 
 # functions
 
+function info () {
+echo "Short version:  " $( defaults read $1/Contents/Info.plist CFBundleShortVersionString )
+echo "Long version:   " $( defaults read $1/Contents/Info.plist CFBundleVersion )
+echo "Bundle ID:      " $( defaults read $1/Contents/Info.plist CFBundleIdentifier )
+echo "Developer ID:   " $( /usr/bin/codesign -dvv "$1" 2>&1 | /usr/bin/grep "Developer ID Application" | /usr/bin/cut -d ':' -f2 | /usr/bin/xargs )
+echo "Team ID:        " $( /usr/bin/codesign -dvv "$1" 2>&1 | /usr/bin/grep "TeamIdentifier" | /usr/bin/cut -d '=' -f2 )
+}
+
 function vers () {
 defaults read $1/Contents/Info.plist CFBundleShortVersionString
 }
@@ -16,20 +24,20 @@ function lvers () {
 defaults read $1/Contents/Info.plist CFBundleVersion
 }
 
-function pwr () {
-pmset -g batt | awk 'NR==2 { print $3 " " $4 }' | sed 's/;//g'
-}
-
-function jtail () {
-tail -f /var/log/jamf.log | awk '{for(i=1;i<=NF;i++){ if($i~/Execut|Success/) $i=sprintf("\033[0;36m%s\033[0;00m",$i)}; print}'
-}
-
 function devID () {
 /usr/bin/codesign -dvv "$1" 2>&1 | /usr/bin/grep "Developer ID Application" | /usr/bin/cut -d ':' -f2 | /usr/bin/xargs
 }
 
 function teamID () {
 /usr/bin/codesign -dvv "$1" 2>&1 | /usr/bin/grep "TeamIdentifier" | /usr/bin/cut -d '=' -f2
+}
+
+function pwr () {
+pmset -g batt | awk 'NR==2 { print $3 " " $4 }' | sed 's/;//g'
+}
+
+function jtail () {
+tail -f /var/log/jamf.log | awk '{for(i=1;i<=NF;i++){ if($i~/Execut|Success/) $i=sprintf("\033[0;36m%s\033[0;00m",$i)}; print}'
 }
 
 # aliases

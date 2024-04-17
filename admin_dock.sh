@@ -14,6 +14,7 @@
 # ✅ check for AD binding, add Directory Utility if bound
 # ✅ validate new AD, ARD vs SS checks, & that add to array works as intended
 # ✅ check OS version, add System Prefs vs System Settings
+# >> pass parameter for specific username instead of just current user
 
 # if dockutil is present, bail out
 # if dockutil is not present, read jss and try jamf policy first

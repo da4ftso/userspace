@@ -20,7 +20,27 @@
 # if jss is empty OR if jss not empty BUT dockutil still not present, try direct download
 # if dockutil still not present, bail out
 
+# variables
+
+currentUser=$(stat -f %Su "/dev/console")
+# currentHomeFolder=$(dscl . read "/Users/$currentUser" NFSHomeDirectory | awk '{ print $NF }')
+uid=$(id -u "$currentUser")
+
 jss_url=$(defaults read /Library/Preferences/com.jamfsoftware.jamf.plist jss_url)
+
+# run as user since Jamf runs scripts by default, and we're poking userspace
+
+runAsUser() {  
+  if [ "$currentUser" != "loginwindow" ]; then
+    launchctl asuser "$uid" sudo -u "$currentUser" "$@"
+  else
+    echo "no user logged in"
+    # uncomment the exit command to make the function exit with an error when no user is logged in
+    # exit 1
+  fi
+} 
+
+# get dockutil if not present 
 
 if [[ ! -e "/usr/local/bin/dockutil" ]]; then
         if [[ -z $jss_url ]]; then
@@ -84,7 +104,7 @@ itemsToAdd=(
    "/Applications/Utilities/Terminal.app"
 )
 
-# check for AD binding
+# check for AD binding; this is the modern location (10.15+ iirc)
 
 ADCompName=$(dsconfigad -show | awk -F'= ' '/Computer Account/{print $NF}')
 
@@ -93,7 +113,7 @@ if [[ -n "$ADCompName" ]]; then
 fi
 
 
-# check for ARD, add Screen Sharing otherwise
+# check for ARD, add Screen Sharing otherwise; this is the modern location (10.15+ iirc)
 
 if [[ ! -e "/Applications/Remote Desktop.app" ]]; then
     itemsToAdd+=("/System/Library/CoreServices/Applications/Screen Sharing.app")
@@ -118,7 +138,7 @@ for removalItem in "${itemsToRemove[@]}"
       # Check that the item is actually in the Dock
       inDock=$(/usr/local/bin/dockutil --list | /usr/bin/grep "$removalItem")
       if [ -n "$inDock" ]; then
-         /usr/local/bin/dockutil --remove "$removalItem" --no-restart
+         /usr/local/bin/dockutil --remove "$removalItem" "${currentUser}" --no-restart
       fi
    done
 
@@ -129,9 +149,9 @@ for additionItem in "${itemsToAdd[@]}"
       # Stripping path and extension code based on code from http://stackoverflow.com/a/2664746
       additionItemString=${additionItem##*/}
       additionItemBasename=${additionItemString%.*}
-      inDock=$(/usr/local/bin/dockutil --list | /usr/bin/grep "$additionItemBasename")
+      inDock=$(/usr/local/bin/dockutil --list "${currentUser}" | /usr/bin/grep "$additionItemBasename")
       if [ -e "$additionItem" ] && [ -z "$inDock" ]; then
-            /usr/local/bin/dockutil --add "$additionItem" --no-restart
+            /usr/local/bin/dockutil --add "$additionItem" "${currentUser}" --no-restart
       fi
    done
 

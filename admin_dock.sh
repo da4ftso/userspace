@@ -14,7 +14,6 @@
 # ✅ check for AD binding, add Directory Utility if bound
 # ✅ validate new AD, ARD vs SS checks, & that add to array works as intended
 # ✅ check OS version, add System Prefs vs System Settings
-# >> pass parameter for specific username instead of just current user
 
 # if dockutil is present, bail out
 # if dockutil is not present, read jss and try jamf policy first
@@ -23,9 +22,9 @@
 
 # variables
 
-currentUser=$(stat -f %Su "/dev/console")
-# currentHomeFolder=$(dscl . read "/Users/$currentUser" NFSHomeDirectory | awk '{ print $NF }')
-uid=$(id -u "$currentUser")
+currentUser=$(stat -f %Su "/dev/console") # pete
+currentHomeFolder=$(dscl . read "/Users/$currentUser" NFSHomeDirectory | awk '{ print $NF }') # /Users/pete
+uid=$(id -u "$currentUser") # 501
 
 jss_url=$(defaults read /Library/Preferences/com.jamfsoftware.jamf.plist jss_url)
 
@@ -45,8 +44,8 @@ runAsUser() {
 
 if [[ ! -e "/usr/local/bin/dockutil" ]]; then
         if [[ -z $jss_url ]]; then
-	curl --output-dir /private/tmp -O https://github.com/kcrawford/dockutil/releases/download/3.0.2/dockutil-3.0.2.pkg ;
-	installer -pkg /private/tmp/dockutil-3.0.2.pkg -target / ;
+	curl --output-dir /private/tmp -O https://github.com/kcrawford/dockutil/releases/download/3.1.3/dockutil-3.1.3.pkg ;
+	installer -pkg /private/tmp/dockutil-3.1.3.pkg -target / ;
 	sleep 1 ;
 fi
    /usr/local/bin/jamf policy -event install-dockutil
@@ -137,9 +136,9 @@ fi
 for removalItem in "${itemsToRemove[@]}"
    do
       # Check that the item is actually in the Dock
-      inDock=$(/usr/local/bin/dockutil --list | /usr/bin/grep "$removalItem")
+      inDock=$(/usr/local/bin/dockutil --list "${currentHomeFolder}" | /usr/bin/grep "$removalItem")
       if [ -n "$inDock" ]; then
-         /usr/local/bin/dockutil --remove "$removalItem" "${currentUser}" --no-restart
+         /usr/local/bin/dockutil --remove "$removalItem" "${currentHomeFolder}" --no-restart
       fi
    done
 
@@ -150,9 +149,9 @@ for additionItem in "${itemsToAdd[@]}"
       # Stripping path and extension code based on code from http://stackoverflow.com/a/2664746
       additionItemString=${additionItem##*/}
       additionItemBasename=${additionItemString%.*}
-      inDock=$(/usr/local/bin/dockutil --list "${currentUser}" | /usr/bin/grep "$additionItemBasename")
+      inDock=$(/usr/local/bin/dockutil --list "${currentHomeFolder}" | /usr/bin/grep "$additionItemBasename")
       if [ -e "$additionItem" ] && [ -z "$inDock" ]; then
-            /usr/local/bin/dockutil --add "$additionItem" "${currentUser}" --no-restart
+            /usr/local/bin/dockutil --add "$additionItem" "${currentHomeFolder}" --no-restart
       fi
    done
 

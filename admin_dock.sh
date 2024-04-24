@@ -15,11 +15,6 @@
 # ✅ validate new AD, ARD vs SS checks, & that add to array works as intended
 # ✅ check OS version, add System Prefs vs System Settings
 
-# if dockutil is present, bail out
-# if dockutil is not present, read jss and try jamf policy first
-# if jss is empty OR if jss not empty BUT dockutil still not present, try direct download
-# if dockutil still not present, bail out
-
 # variables
 
 currentUser=$(stat -f %Su "/dev/console") # pete
@@ -40,7 +35,17 @@ runAsUser() {
   fi
 } 
 
-# get dockutil if not present 
+# get dockutil if not present
+#
+# if dockutil is present, bail out
+# if dockutil is not present, read jss and try jamf policy first
+# if jss is empty OR if jss not empty BUT dockutil still not present, try direct download
+# if dockutil still not present, bail out
+#
+# TO-DO:
+# try Jamf first; if no jss_url, go to curl
+# if jss_url, try that, wait a bit
+# after both, check again for presence dockutil, bail out if still not found
 
 if [[ ! -e "/usr/local/bin/dockutil" ]]; then
         if [[ -z $jss_url ]]; then

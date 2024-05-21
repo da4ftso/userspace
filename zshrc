@@ -46,6 +46,8 @@ alias ffs="sudo !! "
 alias ll="ls -la | more"
 alias lt="ls -lt | more"
 
+alias ntver="/usr/bin/awk '/version/ { print $NF } ' /Library/Application\ Support/Nexthink/config.json | tr -d '",'"
+
 alias history="history -f"
 
 alias pip-upgrade="python3 -m pip install --upgrade pip"

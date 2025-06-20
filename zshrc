@@ -15,7 +15,25 @@ setopt SHARE_HISTORY
 
 # functions
 
+function mvpkg () {
+mv Documents/AppToPKG/*/*.pkg Desktop/new
+}
+
 function info () {
+if [[ -e $1 ]]; then
+	short=$( defaults read $1/Contents/Info.plist CFBundleShortVersionString )
+	echo "Short version:  " $short
+	echo "Long version:   " $( defaults read $1/Contents/Info.plist CFBundleVersion )
+	echo "Bundle ID:      " $( defaults read $1/Contents/Info.plist CFBundleIdentifier )
+	echo "Developer ID:   " $( /usr/bin/codesign -dvv "$1" 2>&1 | /usr/bin/grep "Developer ID Application" | /usr/bin/cut -d ':' -f2 | /usr/bin/xargs )
+	echo "Team ID:        " $( /usr/bin/codesign -dvv "$1" 2>&1 | /usr/bin/grep "TeamIdentifier" | /usr/bin/cut -d '=' -f2 )
+	echo "regex:           (copied to pasteboard)" $( ~/regex.sh $short | tail -n 2 | pbcopy)
+else
+	echo "No app found"
+fi	
+}
+
+function x1info () {
 echo "Short version:  " $( defaults read $1/Contents/Info.plist CFBundleShortVersionString )
 echo "Long version:   " $( defaults read $1/Contents/Info.plist CFBundleVersion )
 echo "Bundle ID:      " $( defaults read $1/Contents/Info.plist CFBundleIdentifier )
@@ -43,8 +61,35 @@ function pwr () {
 pmset -g batt | awk 'NR==2 { print $3 " " $4 }' | sed 's/;//g'
 }
 
+function rev() {
+rowa
+rod
+rmst
+}
+
+function rowa() {
+osascript -e 'tell application "Outlook (PWA)" to quit'
+sleep 1
+osascript -e 'tell application "Outlook (PWA)" to activate'
+} 
+
+function rod() {
+pkill OneDrive
+sleep 2
+osascript -e 'tell application "OneDrive" to activate'
+}
+
+function rmst() {
+osascript -e 'tell application "Microsoft Teams" to quit'
+sleep 2
+osascript -e 'tell application "Microsoft Teams" to activate'
+}
+
+function dud() {
+diskutil unmount /Volumes/Distpoint
+}
 function jtail () {
-tail -f /var/log/jamf.log | awk '{for(i=1;i<=NF;i++){ if($i~/Execut|Success/) $i=sprintf("\033[0;36m%s\033[0;00m",$i)}; print}'
+tail -f /var/log/jamf.log | awk '{for(i=1;i<=NF;i++){ if($i~/Execut|Install|Success/) $i=sprintf("\033[0;36m%s\033[0;00m",$i)}; $5=""; sub(/  /, " "); print}'
 }
 
 # aliases

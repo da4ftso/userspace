@@ -9,6 +9,24 @@ export upped=$(date +%y%m%d)
 
 # functions
 
+function randpw {
+  local len="${1:-16}"
+
+  if ! command -v openssl >/dev/null; then
+    echo "openssl not found"
+    return 1
+  fi
+
+  # Generate and filter to safe chars (alphanumeric + - _)
+  local pw
+  pw=$(openssl rand -base64 48 \
+        | tr -dc 'A-Za-z0-9._-' \
+        | head -c "$len") || return 1
+
+  print -r -- "$pw" | pbcopy
+  print -r -- "$pw"
+}
+
 function beep() {
 for i in {1..$1}; do tput bel; done
 }

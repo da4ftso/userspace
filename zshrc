@@ -99,6 +99,33 @@ echo $(pmset -g batt | awk ' NR==2 { print $3 " " $4 " " $5 } ')
 }
 
 function jtail () {
+tail -f /var/log/jamf.log | awk '
+/patch/ { next }
+
+{
+    for (i = 1; i <= NF; i++) {
+
+        # Cyan
+        if ($i ~ /Execut|Success|failed/)
+            $i = sprintf("\033[0;36m%s\033[0m", $i)
+
+        # Yellow
+        if ($i ~ /Installing/)
+            $i = sprintf("\033[0;33m%s\033[0m", $i)
+
+        # Red
+        if ($i ~ /Error/)
+            $i = sprintf("\033[0;31m%s\033[0m", $i)
+    }
+
+    $5 = ""
+    $6 = ""
+    sub(/  +/, " ")
+    print
+}'
+}
+
+function xjtail () {
 tail -f /var/log/jamf.log | awk '{for(i=1;i<=NF;i++){ if($i~/Execut|Success/) $i=sprintf("\033[0;36m%s\033[0;00m",$i)}; \
 {if($i~/failed/) $i=sprintf("\031[0;36m%s\031[0;00m",$i)}; $5=""; $6=""; sub(/  /, ""); print}'
 }

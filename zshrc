@@ -101,6 +101,8 @@ echo $(pmset -g batt | awk ' NR==2 { print $3 " " $4 " " $5 } ')
 function jtail () {
 tail -f /var/log/jamf.log | awk '
 /patch/ { next }
+/recurring/ { next }
+/bgrecon/ { next }
 
 {
     for (i = 1; i <= NF; i++) {

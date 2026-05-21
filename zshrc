@@ -1,4 +1,4 @@
-# path
+# PATH
 
 # export PATH="/opt/homebrew/sbin:$PATH"
 # export PATH="/opt/homebrew/bin:$PATH"
@@ -7,7 +7,37 @@ export PATH="/opt/homebrew/sbin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/
 
 export upped=$(date +%y%m%d)
 
-# functions
+# FUNCTIONS
+
+function fzf-history() {
+  local tmpfile=$(mktemp)
+
+  # Select entries (multi-select)
+  grep -n '' ~/.zsh_history | \
+    fzf --multi --tac --no-sort \
+        --delimiter ':' \
+        --with-nth=2.. \
+        --preview 'echo {}' \
+    > "$tmpfile"
+
+  # Exit if nothing selected
+  [[ ! -s "$tmpfile" ]] && { rm -f "$tmpfile"; return; }
+
+  # Build list of line numbers to delete
+  local lines=$(cut -d: -f1 "$tmpfile" | sort -rn)
+
+  # Delete from bottom up (so indexes don't shift)
+  for l in $lines; do
+    sed -i '' "${l}d" ~/.zsh_history
+  done
+
+  rm -f "$tmpfile"
+
+  # Reload history
+  fc -R ~/.zsh_history
+
+  echo "Deleted $(echo "$lines" | wc -l | tr -d ' ') entries"
+}
 
 function randpw {
   local len="${1:-16}"
@@ -32,7 +62,16 @@ for i in {1..$1}; do tput bel; done
 }
 
 function mvapp() {
-mv ~/Documents/AppToPKG/*/*.pkg ~/Desktop/new
+mv -f /Users/u446852/Documents/AppToPKG/DBeaver*/*.pkg(N)  Desktop/new/DBeaver 2>/dev/null
+mv -f /Users/u446852/Documents/AppToPKG/Insomnia*/*.pkg(N)  Desktop/new/Insomnia 2>/dev/null
+mv -f /Users/u446852/Documents/AppToPKG/IntelliJ*/*.pkg(N)  Desktop/new/IntelliJ\ ideal 2>/dev/null
+mv -f /Users/u446852/Documents/AppToPKG/Podman*/*.pkg(N)  Desktop/new/Podman 2>/dev/null
+mv -f /Users/u446852/Documents/AppToPKG/Postman*/*.pkg(N)  Desktop/new/Postman 2>/dev/null
+mv -f /Users/u446852/Documents/AppToPKG/Pycharm*/*.pkg(N)  Desktop/new/pycharm 2>/dev/null
+mv -f /Users/u446852/Documents/AppToPKG/Rancher*/*.pkg(N)  Desktop/new/Rancher 2>/dev/null
+mv -f /Users/u446852/Documents/AppToPKG/Visual\ Studio\ Code*/*.pkg(N)  Desktop/new/Microsoft/Visual\ Studio\ Code 2>/dev/null
+mv -f /Users/u446852/Documents/AppToPKG/Webex*/*.pkg(N)  Desktop/new/Cisco/Webex 2>/dev/null
+mv -f ~/Documents/AppToPKG/*/*.pkg(N) ~/Desktop/new 2>/dev/null
 }
 
 function last_policy() {
@@ -43,7 +82,15 @@ else
 fi
 }
 
-function last_uploads() {
+function jpolicy() {
+if [[ $EUID == 0 ]]; then
+  history -100 | awk 'match($0, /-event[[:space:]]+/) { print $2 "\t" substr($0, RSTART+RLENGTH) }' 
+else
+  echo "jamf policy was probably running from root; sudo won't work here."
+fi
+}
+
+function juploads() {
 history -100 |
 awk '
 /history/ { next }
@@ -137,7 +184,35 @@ tail -f /var/log/jamf.log | awk '{for(i=1;i<=NF;i++){ if($i~/Execut|Success/) $i
 # }
 
 
-# aliases
+function newest() {
+local src="$1"
+local dest="$2"
+local days="${3:-15}"
+local dry="$4"
+
+if [[ -z "$src" || -z "$dest" ]]; then
+  echo "Usage: newest <src> <dest> [days] [--dry-run]"
+  return 1
+fi
+
+if [[ ! -d "$src" ]]; then
+  echo "Source not found: $src"
+  return 1
+fi
+
+mkdir -p "$dest" || return 1
+
+local rsync_opts=(-av --files-from=- --from0)
+
+[[ "$dry" == "--dry-run" ]] && rsync_opts+=(--dry-run)
+
+( find "$src" -type f -mtime "-$days" -print0
+) | rsync "${rsync_opts[@]}" ./ "$dest"/
+
+}
+
+
+# ALIASES
 
 alias bbed="open -a BBEdit $1"
 

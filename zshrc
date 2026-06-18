@@ -150,6 +150,7 @@ tail -f /var/log/jamf.log | awk '
 /patch/ { next }
 /recurring/ { next }
 /bgrecon/ { next }
+/Removing/ { next }
 
 {
     for (i = 1; i <= NF; i++) {
@@ -159,8 +160,15 @@ tail -f /var/log/jamf.log | awk '
             $i = sprintf("\033[0;36m%s\033[0m", $i)
 
         # Yellow
-        if ($i ~ /Installing/)
+        if ($i ~ /Installing/ || $i == "Could")
             $i = sprintf("\033[0;33m%s\033[0m", $i)
+
+        # Handle multi-word phrase "Could not connect"
+        if ($i == "Could" && $(i+1) == "not" && $(i+2) == "connect") {
+            $i = sprintf("\033[0;33m%s %s %s\033[0m", $i, $(i+1), $(i+2))
+            $(i+1) = ""
+            $(i+2) = ""
+        }
 
         # Red
         if ($i ~ /Error/)
@@ -174,10 +182,10 @@ tail -f /var/log/jamf.log | awk '
 }'
 }
 
-function xjtail () {
-tail -f /var/log/jamf.log | awk '{for(i=1;i<=NF;i++){ if($i~/Execut|Success/) $i=sprintf("\033[0;36m%s\033[0;00m",$i)}; \
-{if($i~/failed/) $i=sprintf("\031[0;36m%s\031[0;00m",$i)}; $5=""; $6=""; sub(/  /, ""); print}'
-}
+# function xjtail () {
+# tail -f /var/log/jamf.log | awk '{for(i=1;i<=NF;i++){ if($i~/Execut|Success/) $i=sprintf("\033[0;36m%s\033[0;00m",$i)}; \
+# {if($i~/failed/) $i=sprintf("\031[0;36m%s\031[0;00m",$i)}; $5=""; $6=""; sub(/  /, ""); print}'
+# }
 
 # function jtail () {
 # tail -f /var/log/jamf.log | awk '{for(i=1;i<=NF;i++){ if($i~/Execut|Success/) $i=sprintf("\033[0;36m%s\033[0;00m",$i)}; $5=""; sub(/  /, " "); print}'

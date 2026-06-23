@@ -250,7 +250,7 @@ alias greedy="autopkg repo-update all ; \
 alias caf="caffeinate -di &"
 alias decaf="pkill caffeinate"
 
-alias source=". ~/.zshrc && echo 'zsh config reloaded from ~/.zshrc'"
+# alias source=". ~/.zshrc && echo 'zsh config reloaded from ~/.zshrc'" - can interfere with pyenv
 alias reload=". ~/.zshrc && echo 'zsh config reloaded from ~/.zshrc'"
 
 alias pip-upgrade="python3 -m pip install --upgrade pip"

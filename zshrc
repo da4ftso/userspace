@@ -1,13 +1,15 @@
-# PATH
-
-# export PATH="/opt/homebrew/sbin:$PATH"
-# export PATH="/opt/homebrew/bin:$PATH"
+# paths
 
 export PATH="/opt/homebrew/sbin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
-
+export HIST_IGNORE="cd:ll:ls:exit:dud:beep"
 export upped=$(date +%y%m%d)
 
-# FUNCTIONS
+# functions
+
+function today() {
+date=$(osascript -e 'do shell script "date +%y%m%d"')
+echo $date "PWC" | tr -d '\n' | pbcopy 
+}
 
 function fzf-history() {
   local tmpfile=$(mktemp)
@@ -38,24 +40,7 @@ function fzf-history() {
 
   echo "Deleted $(echo "$lines" | wc -l | tr -d ' ') entries"
 }
-
-function randpw {
-  local len="${1:-16}"
-
-  if ! command -v openssl >/dev/null; then
-    echo "openssl not found"
-    return 1
-  fi
-
-  # Generate and filter to safe chars (alphanumeric + - _)
-  local pw
-  pw=$(openssl rand -base64 48 \
-        | tr -dc 'A-Za-z0-9._-' \
-        | head -c "$len") || return 1
-
-  print -r -- "$pw" | pbcopy
-  print -r -- "$pw"
-}
+``
 
 function beep() {
 for i in {1..$1}; do tput bel; done
@@ -74,12 +59,14 @@ mv -f /Users/u446852/Documents/AppToPKG/Webex*/*.pkg(N)  Desktop/new/Cisco/Webex
 mv -f ~/Documents/AppToPKG/*/*.pkg(N) ~/Desktop/new 2>/dev/null
 }
 
-function last_policy() {
-if [[ $EUID == 0 ]]; then
-  history -100 | awk 'match($0, /-event[[:space:]]+/) { print $2 "\t" substr($0, RSTART+RLENGTH) }' 
-else
-  echo "jamf policy was probably running from root; sudo won't work here."
-fi
+function move_pkgs_fuzzy() {
+  setopt local_options extendedglob
+
+  for d in /src/*(/); do
+    prefix=${${d:t}%%[^A-Za-z]*}
+    [[ -z $prefix ]] && continue
+    mv -f $d/*.pkg(N) /dest/$prefix/ 2>/dev/null
+  done
 }
 
 function jpolicy() {
@@ -91,27 +78,45 @@ fi
 }
 
 function juploads() {
-history -100 |
-awk '
-/history/ { next }
+  history -100 |
+  awk '
+  /history/ { next }
 
-BEGIN { printed=0 }
-
-{
-  for (i=1; i<=NF; i++)
-    if ($i ~ /^[0-9]{1,2}\/[0-9]{1,2}\/[0-9]{4}$/) { split($i,d,"/"); md=d[1]"/"d[2]; break }
-
-  match($0, /--name "[^"]+"/)
-  if (RSTART) {
-    name = substr($0, RSTART+8, RLENGTH-9)
-    if (!printed) { print ""; printed=1 }   # one leading blank line
-    print md, name
+  BEGIN {
+    printed = 0
+    dim = "\033[2m"
+    green = "\033[0;32m"
+    reset = "\033[0m"
   }
+
+  {
+    md=""
+    for (i=1; i<=NF; i++) {
+      if ($i ~ /^[0-9]{1,2}\/[0-9]{1,2}\/[0-9]{4}$/) {
+        split($i, d, "/")
+        md = d[1] "/" d[2]
+        break
+      }
+    }
+
+    match($0, /--name "[^"]+"/)
+    if (RSTART) {
+      name = substr($0, RSTART+8, RLENGTH-9)
+      if (!printed) { print ""; printed=1 }
+
+      printf "%s%-5s%s  %s%s%s\n",
+             dim, md, reset,
+             green, name, reset
+    }
+  }
+
+  END {
+    if (printed)
+      printf "\n"
+  }'
 }
 
-END { if (printed) print "" }               # one trailing blank line
-'
-}
+
 
 function model() {
 /usr/sbin/sysctl -n hw.model
@@ -151,6 +156,9 @@ tail -f /var/log/jamf.log | awk '
 /recurring/ { next }
 /bgrecon/ { next }
 /Removing/ { next }
+/Adding/ { next }
+/Updating/ { next }
+/Flushing/ { next }
 
 {
     for (i = 1; i <= NF; i++) {
@@ -182,15 +190,17 @@ tail -f /var/log/jamf.log | awk '
 }'
 }
 
-# function xjtail () {
-# tail -f /var/log/jamf.log | awk '{for(i=1;i<=NF;i++){ if($i~/Execut|Success/) $i=sprintf("\033[0;36m%s\033[0;00m",$i)}; \
-# {if($i~/failed/) $i=sprintf("\031[0;36m%s\031[0;00m",$i)}; $5=""; $6=""; sub(/  /, ""); print}'
-# }
-
 # function jtail () {
 # tail -f /var/log/jamf.log | awk '{for(i=1;i<=NF;i++){ if($i~/Execut|Success/) $i=sprintf("\033[0;36m%s\033[0;00m",$i)}; $5=""; sub(/  /, " "); print}'
 # }
 
+# function dud() {
+# mount=(/Volumes/Distpoint*(N/))
+# if (( ${#mount} )); then
+#	diskutil unmount ${#mount}
+#	echo "Volume ${mount} unmounted."
+# fi
+# }
 
 function newest() {
 local src="$1"
@@ -208,19 +218,18 @@ if [[ ! -d "$src" ]]; then
   return 1
 fi
 
-mkdir -p "$dest" || return 1
+# mkdir -p "$dest" || return 1
 
 local rsync_opts=(-av --files-from=- --from0)
 
 [[ "$dry" == "--dry-run" ]] && rsync_opts+=(--dry-run)
 
 ( find "$src" -type f -mtime "-$days" -print0
-) | rsync "${rsync_opts[@]}" ./ "$dest"/
+) | rsync --exclude="*DS_Store*" "${rsync_opts[@]}" ./ "$dest"/ 2>/dev/null
 
 }
 
-
-# ALIASES
+# aliases
 
 alias bbed="open -a BBEdit $1"
 
@@ -233,7 +242,7 @@ alias dud="diskutil unmount /Volumes/Distpoint"
 alias history="history -f"
 
 alias recon="/usr/local/bin/jamf recon"
-alias qrecon="/usr/local/bin/jamf recon > /dev/null 2>&1"
+alias qrecon="/usr/local/bin/jamf recon &>/dev/null"
 
 alias muc="~/.cargo/bin/muc -f ~/.zsh_history | head -n 10"
 
@@ -248,9 +257,10 @@ alias greedy="autopkg repo-update all ; \
  date"
 
 alias caf="caffeinate -di &"
+alias halfcaf="caffeinate -i &"
 alias decaf="pkill caffeinate"
 
-# alias source=". ~/.zshrc && echo 'zsh config reloaded from ~/.zshrc'" - can interfere with pyenv
+# alias source=". ~/.zshrc && echo 'zsh config reloaded from ~/.zshrc'"
 alias reload=". ~/.zshrc && echo 'zsh config reloaded from ~/.zshrc'"
 
 alias pip-upgrade="python3 -m pip install --upgrade pip"
@@ -264,4 +274,3 @@ export PATH="/opt/homebrew/opt/make/libexec/gnubin:$PATH"
 export INSOMNIA_DISABLE_AUTOMATIC_UPDATES=true
 export JAVA_HOME=$(/usr/libexec/java_home -v 17)
 export JAVA_HOME=/Library/Java/JavaVirtualMachines/zulu-17.jdk/Contents/Home
-

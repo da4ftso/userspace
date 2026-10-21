@@ -1,4 +1,9 @@
-# paths
+# 261021
+
+# path
+
+# export PATH="/opt/homebrew/sbin:$PATH"
+# export PATH="/opt/homebrew/bin:$PATH"
 
 export PATH="/opt/homebrew/sbin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
 export HIST_IGNORE="cd:ll:ls:exit:dud:beep"
@@ -116,10 +121,12 @@ function juploads() {
   }'
 }
 
-
-
 function model() {
 /usr/sbin/sysctl -n hw.model
+}
+
+function serial() {
+ioreg -c IOPlatformExpertDevice -d 2 | awk -F\" '/IOPlatformSerialNumber/{print $(NF-1)}'
 }
 
 function mdfindq() {
@@ -189,6 +196,39 @@ tail -f /var/log/jamf.log | awk '
     print
 }'
 }
+# function jtail () {
+# tail -f /var/log/jamf.log | awk '
+# /patch/ { next }
+# /recurring/ { next }
+# /bgrecon/ { next }
+# 
+# {
+# 	for (i = 1; i <= NF; i++) {
+# 
+# 		# Cyan
+# 		if ($i ~ /Execut|Success|failed/)
+# 			$i = sprintf("\033[0;36m%s\033[0m", $i)
+# 
+# 		# Yellow
+# 		if ($i ~ /Installing/)
+# 			$i = sprintf("\033[0;33m%s\033[0m", $i)
+# 
+# 		# Red
+# 		if ($i ~ /Error/)
+# 			$i = sprintf("\033[0;31m%s\033[0m", $i)
+# 	}
+# 
+# 	$5 = ""
+# 	$6 = ""
+# 	sub(/  +/, " ")
+# 	print
+# }'
+# }
+
+function xjtail () {
+tail -f /var/log/jamf.log | awk '{for(i=1;i<=NF;i++){ if($i~/Execut|Success/) $i=sprintf("\033[0;36m%s\033[0;00m",$i)}; \
+{if($i~/failed/) $i=sprintf("\031[0;36m%s\031[0;00m",$i)}; $5=""; $6=""; sub(/  /, ""); print}' | grep -v patch
+}
 
 # function jtail () {
 # tail -f /var/log/jamf.log | awk '{for(i=1;i<=NF;i++){ if($i~/Execut|Success/) $i=sprintf("\033[0;36m%s\033[0;00m",$i)}; $5=""; sub(/  /, " "); print}'
@@ -229,6 +269,127 @@ local rsync_opts=(-av --files-from=- --from0)
 
 }
 
+rsync_to() {
+    local default_src="$HOME/Desktop/new/"      # foo
+    local default_dst="/Volumes/sandisk/new/"   # bar
+    local default_days=7
+    local default_purge_days=30
+
+    local src dst days purge_days
+    local required_bytes available_bytes target_bytes
+    local file size
+
+    read "src?Source [$default_src]: "
+    read "dst?Destination [$default_dst]: "
+    read "days?Days to sync [$default_days]: "
+    read "purge_days?Purge days [0=no purge, auto, $default_purge_days]: "
+
+    src="${src:-$default_src}"
+    dst="${dst:-$default_dst}"
+    days="${days:-$default_days}"
+    purge_days="${purge_days:-$default_purge_days}"
+
+    mkdir -p "$dst" || return 1
+
+    # Calculate the size of files that will be synced.
+    required_bytes=0
+    while IFS= read -r -d '' file; do
+        size=$(stat -f%z "$file") || return 1
+        required_bytes=$((required_bytes + size))
+    done < <(
+        find "$src" -type f -mtime "-$days" ! -name '.DS_Store' -print0
+    )
+
+    # Auto purge: remove oldest files until there is enough free space.
+    if [[ "$purge_days" == "auto" ]]; then
+        available_bytes=$(df -k "$dst" | awk 'NR==2 {print $4 * 1024}')
+
+        if (( available_bytes < required_bytes )); then
+            target_bytes=$((required_bytes - available_bytes))
+
+            echo "Auto purge: need to free $target_bytes bytes..."
+
+            while (( target_bytes > 0 )); do
+                file=$(
+                    find "$dst" -type f ! -name '.DS_Store' -print0 |
+                        xargs -0 -n1 stat -f '%m %z %N' 2>/dev/null |
+                        sort -n |
+                        head -n1 |
+                        cut -d' ' -f3-
+                )
+
+                [[ -n "$file" ]] || break
+
+                size=$(stat -f%z "$file") || break
+
+                echo "Purging: $file"
+                rm -f -- "$file" || return 1
+
+                target_bytes=$((target_bytes - size))
+            done
+        fi
+
+    # Numeric purge: remove files older than purge_days.
+    elif [[ "$purge_days" =~ ^[0-9]+$ ]]; then
+        if (( purge_days > 0 )); then
+            find "$dst" -type f \
+                -mtime "+$purge_days" \
+                ! -name '.DS_Store' \
+                -delete
+        fi
+
+    else
+        echo "Invalid purge_days: '$purge_days' (use 0, a number, or auto)" >&2
+        return 1
+    fi
+
+    # Perform the sync.
+    find "$src" -type f -mtime "-$days" ! -name '.DS_Store' -print0 |
+        perl -0pe "s#^\Q${src%/}/\E##" |
+        rsync -a --files-from=- --from0 --ignore-existing -h "$src" "$dst"
+        
+    # eject or cancel
+	countdown=5
+	# echo "Ejecting $default_dst in $countdown .."
+
+	while (( countdown > 0 )); do
+    	printf "\rEjecting $default_dst in %2d seconds... " "$countdown"
+
+    # Wait up to 1 second for a single keystroke
+    if read -r -s -n 1 -t 1 key 2>/dev/null; then
+        echo
+        # echo "Cancelled by user."
+        exit 0
+    fi
+
+    ((countdown--))
+done
+
+
+
+your_command_here    
+}
+
+rsync_from() {
+    local default_src="/Volumes/sandisk/new/"
+    local default_dst="$HOME/Desktop/new/"
+    local default_days=7
+    local src dst days
+
+    read "src?Source [$default_src]: "
+    read "dst?Destination [$default_dst]: "
+    read "days?Days to sync [$default_days]: "
+
+    src="${src:-$default_src}"
+    dst="${dst:-$default_dst}"
+    days="${days:-$default_days}"
+
+    mkdir -p "$dst" || return 1
+
+    find "$src" -type f -mtime "-$days" ! -name '.DS_Store' -print0 |
+        perl -0pe "s#^\Q${src%/}/\E##" |
+        rsync -a --files-from=- --from0 --ignore-existing -h "$src" "$dst"
+}
 # aliases
 
 alias bbed="open -a BBEdit $1"
@@ -257,7 +418,6 @@ alias greedy="autopkg repo-update all ; \
  date"
 
 alias caf="caffeinate -di &"
-alias halfcaf="caffeinate -i &"
 alias decaf="pkill caffeinate"
 
 # alias source=". ~/.zshrc && echo 'zsh config reloaded from ~/.zshrc'"

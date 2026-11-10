@@ -1,4 +1,4 @@
-# 261021
+# 261110
 
 # path
 
@@ -45,7 +45,6 @@ function fzf-history() {
 
   echo "Deleted $(echo "$lines" | wc -l | tr -d ' ') entries"
 }
-``
 
 function beep() {
 for i in {1..$1}; do tput bel; done
@@ -54,7 +53,7 @@ for i in {1..$1}; do tput bel; done
 function mvapp() {
 mv -f /Users/u446852/Documents/AppToPKG/DBeaver*/*.pkg(N)  Desktop/new/DBeaver 2>/dev/null
 mv -f /Users/u446852/Documents/AppToPKG/Insomnia*/*.pkg(N)  Desktop/new/Insomnia 2>/dev/null
-mv -f /Users/u446852/Documents/AppToPKG/IntelliJ*/*.pkg(N)  Desktop/new/IntelliJ\ ideal 2>/dev/null
+mv -f /Users/u446852/Documents/AppToPKG/IntelliJ*/*.pkg(N)  Desktop/new/intelliJ\ 2>/dev/null
 mv -f /Users/u446852/Documents/AppToPKG/Podman*/*.pkg(N)  Desktop/new/Podman 2>/dev/null
 mv -f /Users/u446852/Documents/AppToPKG/Postman*/*.pkg(N)  Desktop/new/Postman 2>/dev/null
 mv -f /Users/u446852/Documents/AppToPKG/Pycharm*/*.pkg(N)  Desktop/new/pycharm 2>/dev/null

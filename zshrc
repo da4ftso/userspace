@@ -1,11 +1,26 @@
 # 261110
 
 # path
+typeset -U path
+path=(
+  /opt/homebrew/opt/curl/bin
+  /opt/homebrew/opt/unzip/bin
+  /opt/homebrew/opt/m4/bin
+  /opt/homebrew/opt/make/libexec/gnubin
+  /usr/local/opt/openssl/bin
+  "$JAVA_HOME/bin"
+  /opt/homebrew/bin
+  /opt/homebrew/sbin
+  /usr/local/bin
+  /usr/bin
+  /bin
+  /usr/sbin
+  /sbin
+  $path
+)
 
-# export PATH="/opt/homebrew/sbin:$PATH"
-# export PATH="/opt/homebrew/bin:$PATH"
-
-export PATH="/opt/homebrew/sbin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
+# export
+export INSOMNIA_DISABLE_AUTOMATIC_UPDATES=true
 export HIST_IGNORE="cd:ll:ls:exit:dud:beep"
 export upped=$(date +%y%m%d)
 
@@ -229,17 +244,6 @@ tail -f /var/log/jamf.log | awk '{for(i=1;i<=NF;i++){ if($i~/Execut|Success/) $i
 {if($i~/failed/) $i=sprintf("\031[0;36m%s\031[0;00m",$i)}; $5=""; $6=""; sub(/  /, ""); print}' | grep -v patch
 }
 
-# function jtail () {
-# tail -f /var/log/jamf.log | awk '{for(i=1;i<=NF;i++){ if($i~/Execut|Success/) $i=sprintf("\033[0;36m%s\033[0;00m",$i)}; $5=""; sub(/  /, " "); print}'
-# }
-
-# function dud() {
-# mount=(/Volumes/Distpoint*(N/))
-# if (( ${#mount} )); then
-#	diskutil unmount ${#mount}
-#	echo "Volume ${mount} unmounted."
-# fi
-# }
 
 function newest() {
 local src="$1"
@@ -358,15 +362,13 @@ rsync_to() {
     if read -r -s -n 1 -t 1 key 2>/dev/null; then
         echo
         # echo "Cancelled by user."
-        exit 0
+        return 0
     fi
 
     ((countdown--))
 done
 
-
-
-your_command_here    
+diskutil eject "$dst"
 }
 
 rsync_from() {
@@ -389,15 +391,14 @@ rsync_from() {
         perl -0pe "s#^\Q${src%/}/\E##" |
         rsync -a --files-from=- --from0 --ignore-existing -h "$src" "$dst"
 }
-# aliases
 
-alias bbed="open -a BBEdit $1"
+bbed() { open -a BBEdit "$@"; }
+
+# aliases
 
 alias ffs="sudo !! "
 alias ll="ls -la | more"
 alias lt="ls -lt | more"
-
-alias dud="diskutil unmount /Volumes/Distpoint"
 
 alias history="history -f"
 
@@ -419,17 +420,6 @@ alias greedy="autopkg repo-update all ; \
 alias caf="caffeinate -di &"
 alias decaf="pkill caffeinate"
 
-# alias source=". ~/.zshrc && echo 'zsh config reloaded from ~/.zshrc'"
 alias reload=". ~/.zshrc && echo 'zsh config reloaded from ~/.zshrc'"
 
 alias pip-upgrade="python3 -m pip install --upgrade pip"
-
-export PATH="/usr/local/opt/openssl/bin:$PATH"
-export PATH="/opt/homebrew/opt/curl/bin:$PATH"
-export PATH="/opt/homebrew/opt/openjdk@11/bin:$PATH"
-export PATH="/opt/homebrew/opt/unzip/bin:$PATH"
-export PATH="/opt/homebrew/opt/m4/bin:$PATH"
-export PATH="/opt/homebrew/opt/make/libexec/gnubin:$PATH"
-export INSOMNIA_DISABLE_AUTOMATIC_UPDATES=true
-export JAVA_HOME=$(/usr/libexec/java_home -v 17)
-export JAVA_HOME=/Library/Java/JavaVirtualMachines/zulu-17.jdk/Contents/Home

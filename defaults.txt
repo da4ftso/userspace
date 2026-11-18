@@ -1,5 +1,10 @@
 ## 		macOS settings		 ##
 
+#     disable new TCC pop-up in 27.3b2
+sudo defaults write /Library/Preferences/FeatureFlags/Domain/TCC AX_TRANSPARENCY_INDICATOR -dict Enabled -bool false
+# ( may require )
+sudo mkdir -p /Library/Preferences/FeatureFlags/Domain
+
 # 		show all file extensions
 defaults write NSGlobalDomain AppleShowAllExtensions -bool true
 
@@ -19,6 +24,8 @@ defaults write com.apple.finder DisableAllAnimations -bool true
 defaults write NSGlobalDomain NSAutomaticWindowAnimationsEnabled -bool NO
 defaults write com.apple.finder AnimateInfoPanes -bool false
 defaults write com.apple.dock expose-animation-duration -float 0.05
+defaults write NSGlobalDomain NSWindowResizeTime -float 0.001
+defaults write -g QLPanelAnimationDuration -float 0
 
 # 		Finder quit option
 defaults write com.apple.finder QuitMenuItem -bool true

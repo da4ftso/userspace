@@ -173,13 +173,15 @@ echo $(pmset -g batt | awk ' NR==2 { print $3 " " $4 " " $5 } ')
 
 function jtail () {
 tail -f /var/log/jamf.log | awk '
+/bgrecon/ { next }
+/daemon/ { next }
+/Enforcing/ { next }
+/Flushing/ { next }
+/framework/ { next }
+/launchd/ { next }
 /patch/ { next }
 /recurring/ { next }
-/bgrecon/ { next }
 /Removing/ { next }
-/Adding/ { next }
-/Updating/ { next }
-/Flushing/ { next }
 
 {
     for (i = 1; i <= NF; i++) {
